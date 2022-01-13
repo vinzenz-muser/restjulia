@@ -4,8 +4,9 @@ using HTTP
 
 export HTTP
 
-macro register(r, method, scheme, host, path, handler)
-    return generate_gethandler(r, method, scheme, host, path, handler)
+macro register(r, method, path, handler)
+    print("Hello")
+    return HTTP.Handlers.generate_gethandler(r, method, "", "", path, handler)
 end
 
 end
