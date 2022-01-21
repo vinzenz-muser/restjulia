@@ -1,10 +1,11 @@
 using StructTypes
 
 Base.@kwdef mutable struct ParameterObject
-    name::String
-    in::String
+    name::String = ""
+    in::String = ""
     description::Union{String, Nothing} = nothing
     required::Bool = false
+    schema::Union{Nothing, Dict} = nothing
 end
 StructTypes.StructType(::Type{ParameterObject}) = StructTypes.Mutable()
 
@@ -15,19 +16,19 @@ end
 StructTypes.StructType(::Type{MediaTypeObject}) = StructTypes.Mutable()
 
 Base.@kwdef mutable struct ResponseObject
-    description::String
-    content::Dict{String, MediaTypeObject}
+    description::String = ""
+    content::Dict{String, MediaTypeObject} = Dict{String, MediaTypeObject}()
 end
 StructTypes.StructType(::Type{ResponseObject}) = StructTypes.Mutable()
 
 Base.@kwdef mutable struct RequestBodyObject
-    description::Union{Nothing, String}
-    content::Dict{}
+    description::Union{Nothing, String} = ""
+    content::Union{Nothing, Dict} = nothing
 end
 StructTypes.StructType(::Type{RequestBodyObject}) = StructTypes.Mutable()
 
 Base.@kwdef mutable struct OperationObject
-    responses::Dict{Union{String, Int64}, ResponseObject}
+    responses::Dict{Union{String, Int64}, ResponseObject} = Dict(200 => ResponseObject())
     tags::Vector{String} = String[]
     summary::Union{Nothing, String} = nothing
     description::Union{Nothing, String} = nothing

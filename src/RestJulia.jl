@@ -37,7 +37,7 @@ end
 function generate_path_handler(path::String, handler)
     handler_name = Symbol(handler)
     handler_methods = collect(methods(handler))
-    @assert length(handler_methods) == 1 "More than one handler defined for method $handler_name"
+    #@assert length(handler_methods) == 1 "More than one handler defined for method $handler_name"
     handler_method = handler_methods[1]
     arg_names, arg_types = get_argnames_argtypes(handler_method)
 
@@ -100,20 +100,38 @@ function generate_path_handler(path::String, handler)
     return
 end
 
-function generate_path_item(config)
+function generate_path_item(config)::Types.PathItemObject
     path_item = Types.PathItemObject()
-    handler_methods = collect(methods(handler))
+    handler_methods = collect(methods(config.handler))
+    ans = Types.PathItemObject()
+    ans.get = Types.OperationObject()
+    
     arg_names, arg_types = get_argnames_argtypes(handler_methods[1])
 
-    path_args = []
-    path_split = HTTP.URIs.splitpath($path)
+    parameters = Types.ParameterObject[]
+    path_split = HTTP.URIs.splitpath(config.path)
+
     for (i,path) ∈ enumerate(path_split)
         if path[1:1] == "{"
-            push!(arg_pairs, (Symbol(path[2:end-1]), args_split[i]))
+            parameter_object = Types.ParameterObject()
+            parameter_object.name = path[2:end-1] 
+            parameter_object.in = "path"
+            parameter_object.required = true
+            arg_name = Symbol(path[2:end-1])
+            for (i, function_arg_name) in enumerate(arg_names)
+                if arg_name == function_arg_name
+                    arg_type = arg_types[i]
+                    parameter_object.schema = Dict(
+                        "type" => "integer",
+                        "format" => string(typeof(arg_type))
+                    )
+                end
+            end
+            push!(parameters, parameter_object)
         end
     end 
-
-    return path_item
+    ans.parameters = parameters
+    return ans
 end
 
 function register(r, config::Types.Path)
