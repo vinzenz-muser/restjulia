@@ -5,6 +5,9 @@ using HTTP, JSON3
 include("types/Types.jl")
 using .Types
 
+include("modules/Tools.jl")
+using .Tools
+
 export HTTP
 
 openapi_config = nothing
@@ -22,22 +25,10 @@ function initialize(title::String; version::String="1.0", description::String="A
     return HTTP.Router();
 end
 
-function method_argnames(m::Method)
-    argnames = ccall(:jl_uncompress_argnames, Vector{Symbol}, (Any,), m.slot_syms)
-    isempty(argnames) && return argnames
-    return argnames[1:m.nargs]
-end
-
-function get_argnames_argtypes(m::Method)
-    arg_names = method_argnames(m)[2:end]
-    arg_types = [i for i ∈ m.sig.parameters[2:end]]
-    return arg_names, arg_types
-end
-
 function generate_path_handler(path::String, handler)
     handler_name = Symbol(handler)
     handler_methods = collect(methods(handler))
-    #@assert length(handler_methods) == 1 "More than one handler defined for method $handler_name"
+    @assert length(handler_methods) == 1 "More than one handler defined for method $handler_name"
     handler_method = handler_methods[1]
     arg_names, arg_types = get_argnames_argtypes(handler_method)
 
@@ -98,40 +89,6 @@ function generate_path_handler(path::String, handler)
     eval(req_handler)
 
     return
-end
-
-function generate_path_item(config)::Types.PathItemObject
-    path_item = Types.PathItemObject()
-    handler_methods = collect(methods(config.handler))
-    ans = Types.PathItemObject()
-    ans.get = Types.OperationObject()
-    
-    arg_names, arg_types = get_argnames_argtypes(handler_methods[1])
-
-    parameters = Types.ParameterObject[]
-    path_split = HTTP.URIs.splitpath(config.path)
-
-    for (i,path) ∈ enumerate(path_split)
-        if path[1:1] == "{"
-            parameter_object = Types.ParameterObject()
-            parameter_object.name = path[2:end-1] 
-            parameter_object.in = "path"
-            parameter_object.required = true
-            arg_name = Symbol(path[2:end-1])
-            for (i, function_arg_name) in enumerate(arg_names)
-                if arg_name == function_arg_name
-                    arg_type = arg_types[i]
-                    parameter_object.schema = Dict(
-                        "type" => "integer",
-                        "format" => string(typeof(arg_type))
-                    )
-                end
-            end
-            push!(parameters, parameter_object)
-        end
-    end 
-    ans.parameters = parameters
-    return ans
 end
 
 function register(r, config::Types.Path)
