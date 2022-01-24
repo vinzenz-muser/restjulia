@@ -1,6 +1,7 @@
 module Types
 
+export PathConfig, PathItemObject, Optional
+
 include("PathConfig.jl")
-include("OpenAPIConfig.jl")
 
 end

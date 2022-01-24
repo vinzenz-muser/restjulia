@@ -11,7 +11,7 @@ using .Tools
 include("modules/OpenApi.jl")
 using .OpenApi
 
-export HTTP, PathConfig
+export HTTP, PathConfig, Optional
 
 openapi_config = nothing
 
@@ -62,40 +62,33 @@ function generate_path_handler(path::String, handler)
                 push!(arg_pairs, (Symbol(key), val))
             end
             
-            args = Any[]
+            args = []
 
             for (index, type) ∈ enumerate(arg_types)
                 arg_found = false
                 arg_name = arg_names[index]
-                concrete_types = type isa Union ? Tools.get_types_union(type) : [type]
                 for (name, arg) ∈ arg_pairs
                     if name == arg_name
-                        @show concrete_types
-                        for concrete_type ∈ [i for i ∈ concrete_types if i ≠ Nothing]
-
-                            parsed_arg = isa(arg, concrete_type) ? arg : tryparse(concrete_type, arg)
-                            @show parsed_arg
-                            if !isnothing(parsed_arg)
-                                arg_found = true
-                                push!(args, parsed_arg)
-                                break
-                            end
-                        end
-                        if !arg_found
-                            return HTTP.Response(400, "Argument '$arg_name' must be one of the types '$concrete_types' ('$arg' given)")
+                        try
+                            parsed_arg = isa(arg, type) ? arg : parse(type, arg)
+                            push!(args, parsed_arg)
+                            arg_found = true
+                            break
+                        catch
+                            return HTTP.Response(400, "Argument '$arg_name' must be of type '$type' ('$arg' given)")
                         end
                     end
                 end
                 
                 if !arg_found
-                    if Nothing ∈ concrete_types
+                    if nothing isa type
                         push!(args, nothing)
                     else    
                         return HTTP.Response(400, "Argument '$arg_name' is missing!")
                     end
                 end
             end
-            @show args
+
             try 
                 return HTTP.Response(200, JSON3.write($handler(args...)))
             catch e
