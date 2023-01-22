@@ -1,83 +1,76 @@
 {
-      "openapi": "3.0.0",
-        "paths": {
-                    "/test_path/{test_string}/asdf/{test_float}": {
-                                                                     "post": {
-                                                                                "parameters": [
-                                                                                                {
-                                                                                                       "name": "test_int",
-                                                                                                   "required": false,
-                                                                                                         "in": "query",
-                                                                                                     "schema": {
-                                                                                                                  "type": "string"
-                                                                                                               }
-                                                                                                },
-                                                                                                {
-                                                                                                       "name": "test_float",
-                                                                                                   "required": true,
-                                                                                                         "in": "path",
-                                                                                                     "schema": {
-                                                                                                                  "type": "string"
-                                                                                                               }
-                                                                                                },
-                                                                                                {
-                                                                                                       "name": "test_string",
-                                                                                                   "required": true,
-                                                                                                         "in": "path",
-                                                                                                     "schema": {
-                                                                                                                  "type": "string"
-                                                                                                               }
-                                                                                                }
-                                                                                              ],
-                                                                                 "responses": {
-                                                                                                 "200": {
-                                                                                                           "description": "success"
-                                                                                                        }
-                                                                                              }
-                                                                             }
-                                                                  },
-                                 "/test_path/{test_string}/asdf": {
-                                                                     "get": {
-                                                                               "parameters": [
-                                                                                               {
-                                                                                                      "name": "test_int",
-                                                                                                  "required": false,
-                                                                                                        "in": "query",
-                                                                                                    "schema": {
-                                                                                                                 "type": "string"
-                                                                                                              }
-                                                                                               },
-                                                                                               {
-                                                                                                      "name": "test_float",
-                                                                                                  "required": true,
-                                                                                                        "in": "query",
-                                                                                                    "schema": {
-                                                                                                                 "type": "string"
-                                                                                                              }
-                                                                                               },
-                                                                                               {
-                                                                                                      "name": "test_string",
-                                                                                                  "required": true,
-                                                                                                        "in": "path",
-                                                                                                    "schema": {
-                                                                                                                 "type": "string"
-                                                                                                              }
-                                                                                               }
-                                                                                             ],
-                                                                                "responses": {
-                                                                                                "200": {
-                                                                                                          "description": "success"
-                                                                                                       }
-                                                                                             }
-                                                                            }
-                                                                  }
-                 },
-         "info": {
-                          "title": "title",
-                        "version": "1.0",
-                    "description": "A Webservice created with RestJulia"
-                 },
-   "components": {
-                    "schemas": {}
-                 }
+    "openapi": "3.0.0",
+    "paths": {
+        "/test_path/{test_string}/asdf/{test_float}": {
+            "get": {
+                "parameters": [
+                    {
+                        "name": "test_int",
+                        "required": true,
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "test_float",
+                        "required": true,
+                        "in": "path",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "test_string",
+                        "required": true,
+                        "in": "path",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success"
+                    }
+                }
+            }
+        },
+        "/test_json": {
+            "post": {
+                "parameters": [
+                    {
+                        "name": "json_body",
+                        "required": true,
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "test_int",
+                        "required": true,
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success"
+                    }
+                }
+            }
+        }
+    },
+    "info": {
+        "title": "title",
+        "version": "1.0",
+        "description": "A Webservice created with RestJulia"
+    },
+    "components": {
+        "schemas": {
+        }
+    }
 }

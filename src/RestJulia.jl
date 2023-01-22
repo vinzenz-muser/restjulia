@@ -11,11 +11,11 @@ using .Tools
 include("modules/OpenApi.jl")
 using .OpenApi
 
-export HTTP, PathConfig
+export HTTP, PathConfig, @register_type
 
 openapi_config = nothing
 
-function initialize(title::String; version::String="1.0", description::String="A Webservice created with RestJulia", openapi_version::String="3.0.0", )
+function initialize(title::String; version::String="1.0", description::String="A Webservice created with RestJulia", openapi_version::String="3.0.0", )::HTTP.Router
     global openapi_config
     
     openapi_config = Dict(
@@ -34,7 +34,7 @@ function initialize(title::String; version::String="1.0", description::String="A
     return HTTP.Router();
 end
 
-function generate_path_handler(path::String, handler)
+function generate_path_handler(path::String, handler::Function)::Nothing
     handler_name = Symbol(handler)
     handler_methods = collect(methods(handler))
     #@assert length(handler_methods) == 1 "More than one handler defined for method $handler_name"
@@ -95,7 +95,7 @@ function generate_path_handler(path::String, handler)
                     end
                 end
             end
-            @show args
+
             try 
                 return HTTP.Response(200, JSON3.write($handler(args...)))
             catch e
@@ -108,31 +108,30 @@ function generate_path_handler(path::String, handler)
 
     eval(req_handler)
 
-    return
+    return nothing
 end
 
-function register(r, config::Types.PathConfig)
+function register(r, config::Types.PathConfig)::Nothing
     global openapi_config
 
     generate_path_handler(config.path, config.handler)
-    method = config.method
-    scheme = config.scheme
-    host = config.host
-    path = config.path
-    handler = config.handler
     
     existing_config = config.path ∈ keys(openapi_config["paths"]) ? openapi_config["paths"][config.path] : nothing
     openapi_config["paths"][config.path] = OpenApi.PathItemObject(config, existing_config)
 
+    method = config.method
+    path = config.path
+    handler = config.handler
+
     reg_quote = quote
         local local_path = $path
         adapted_path = replace(local_path, r"\{(.*?)\}" => "*")
-        HTTP.@register($r, $method, $scheme, $host, adapted_path, $handler)    
+        HTTP.register!($r, $method, adapted_path, $handler)    
     end
 
     eval(reg_quote)
 
-    return
+    return nothing
 end
 
 end

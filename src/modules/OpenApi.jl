@@ -1,17 +1,23 @@
 module OpenApi
 
 using ..Tools, JSON3, ..Types, ..HTTP
+using StructTypes
 
-export PathObject
+export PathObject, @register_type
 
+macro register_type(custom_type)
+    q = quote
+        $Base.@kwdef $custom_type
+    end
+
+    Main.eval(q)
+end
 
 function ParameterObject(arg_name, arg_type, in_str::String; description="")
     ans_obj = Dict()
     ans_obj["name"] = string(arg_name)
     ans_obj["in"] = in_str
-    ans_obj["schema"] = Dict(
-        "type" => "string"
-    )
+    #ans_obj["schema"] = type_expr_to_schema(arg_type)
     
     ans_obj["required"] = true
 
@@ -24,8 +30,18 @@ end
 
 function OperationObject(path_config::PathConfig)
     operation_object = Dict()
-    operation_object["description"] = path_config.openapi_config.description
-    operation_object["summary"] = path_config.openapi_config.summary
+    
+    optional_arguments = ["description", "summary"]
+
+    for argument in optional_arguments
+        value = getfield(path_config.openapi_config, Symbol(argument))
+
+        if !isnothing(value)
+            operation_object[argument] = value
+        end
+    end
+
+
     operation_object["responses"] = Dict{Int64, Dict}()
     operation_object["responses"][200] = Dict("description" => "success")
     return operation_object
@@ -37,10 +53,20 @@ function PathItemObject(path_config::PathConfig,  path_item::Union{Dict, Nothing
     end
 
     handler = path_config.handler
-    path_item["description"] = path_config.openapi_config.description
-    path_item["summary"] = path_config.openapi_config.summary
+
+    optional_arguments = ["description", "summary"]
+
+    for argument in optional_arguments
+        value = getfield(path_config.openapi_config, Symbol(argument))
+
+        if !isnothing(value)
+            path_item[argument] = value
+        end
+    end
+
     operation_object = OperationObject(path_config)
     handler_methods = collect(methods(handler))
+
     path_item[lowercase(path_config.method)] = operation_object
 
     arg_names, arg_types = Tools.method_argnames_argtypes(handler_methods[1])

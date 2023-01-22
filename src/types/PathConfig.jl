@@ -8,8 +8,6 @@ end
 Base.@kwdef mutable struct PathConfig
     handler::Function
     method::String = "GET"
-    scheme::String = ""
-    host::String = ""
     path::String = ""
     openapi_config::PathOpenApiConfig = PathOpenApiConfig()
 end
